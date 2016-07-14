@@ -4,12 +4,7 @@ from django.core.urlresolvers import reverse
 from .models import Question, Choice
 from django.views import generic
 
-def index(request):
-    latest_question_list = Question.objects.order_by('-pub_date')[:5]
-    context = {
-        'latest_question_list': latest_question_list,
-    }
-    return render(request, 'polls/index.html', context)
+
 
 
 class IndexView(generic.ListView):
@@ -21,12 +16,20 @@ class IndexView(generic.ListView):
         return Question.objects.order_by('-pub_date')[:5]
 
 
-def detail(request, question_id):
-    question = get_object_or_404(Question, pk=question_id)
+def detail(request, pk):
+    question = get_object_or_404(Question, pk=pk)
     return render(request, 'polls/detail.html', {'question':question})
 
-def results(request, question_id):
-    question = get_object_or_404(Question, pk=question_id)
+class DetailView(generic.DetailView):
+    model = Question
+    template_name = 'polls/detail.html'
+
+class ResultsView(generic.DetailView):
+    model = Question
+    template_name = 'polls/results.html'
+
+def results(request, pk):
+    question = get_object_or_404(Question, pk=pk)
     return render(request, 'polls/results.html', {'question': question})
 
 def vote(request, question_id):
@@ -43,9 +46,8 @@ def vote(request, question_id):
         selected_choice.save()
 
         # Always return an HttpResponseRedirect after successfully dealing
-        # with POST data. This prevents data from being posted twice if a 
+        # with POST data. This prevents data from being posted twice if a
         # user hits the Back button
 
         return HttpResponseRedirect(reverse('polls:results',
         args=(question.id,)))
-
